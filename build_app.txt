@@ -1,0 +1,56 @@
+@echo off
+chcp 65001 > nul
+echo ====================== 开始打包Streamlit桌面应用（新版） ======================
+
+:: ===== 自定义配置（请修改以下3行）=====
+set "PROJECT_PATH=C:\Users\Michael_Liu\mypvapp"  :: 你的项目文件夹路径（存放app18.py的文件夹）
+set "APP_FILE=app18.py"             :: 你的Streamlit主程序文件名
+set "APP_NAME=my_pv_quotation"      :: 最终生成的exe程序名称
+
+:: ===== 1. 进入项目目录 =====
+cd /d "%PROJECT_PATH%"
+echo [1/6] 已进入项目目录：%PROJECT_PATH%
+
+:: ===== 2. 创建并激活虚拟环境 =====
+echo [2/6] 创建虚拟环境...
+python -m venv venv
+call venv\Scripts\activate.bat
+echo [√] 虚拟环境已激活
+
+:: ===== 3. 安装所有依赖 =====
+echo [3/6] 安装依赖包...
+pip install --upgrade pip
+pip install streamlit streamlit-folium pyinstaller pandas openpyxl numpy
+echo [√] 依赖安装完成
+
+:: ===== 4. 创建启动脚本run_app.py =====
+echo [4/6] 生成启动脚本...
+echo import sys > run_app.py
+echo from streamlit.web import cli as stcli >> run_app.py
+echo if __name__ == "__main__": >> run_app.py
+echo     sys.argv = ["streamlit", "run", "%APP_FILE%", "--server.headless=true", "--server.port=8501"] >> run_app.py
+echo     sys.exit(stcli.main()) >> run_app.py
+echo [√] 启动脚本已生成
+
+:: ===== 5. 用PyInstaller打包 =====
+echo [5/6] 开始打包桌面应用...
+pyinstaller --onefile --windowed ^
+--name "%APP_NAME%" ^
+--collect-all=streamlit ^
+--collect-all=streamlit_folium ^
+--hidden-import=streamlit.web.cli ^
+--hidden-import=streamlit.runtime ^
+--hidden-import=pandas ^
+--hidden-import=openpyxl ^
+run_app.py
+
+:: ===== 6. 完成提示 =====
+if exist "dist\%APP_NAME%.exe" (
+    echo [√] 打包成功！
+    echo 可执行文件路径：%PROJECT_PATH%\dist\%APP_NAME%.exe
+) else (
+    echo [×] 打包失败，请检查错误信息
+)
+
+echo ====================== 打包流程结束 ======================
+pause
