@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(streamlit run:*)",
+      "Bash(python -c:*)",
+      "Bash(venvScriptsactivate)",
+      "Bash(pyinstaller:*)"
+    ]
+  }
+}
